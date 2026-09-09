@@ -1,0 +1,7 @@
+{
+  "name": "FIT & FINE ATTENDANCE",
+  "description": "Professional mobile-first QR code attendance management app for Fit & Fine Nutrition Club with real-time check-ins, duplicate prevention, member profiles, and reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

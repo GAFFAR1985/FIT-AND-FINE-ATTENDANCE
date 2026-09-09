@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) ||
+         request.auth.token.email.size() > 0);
+    }
+
+    // Users / Admins collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Members collection
+    match /members/{memberId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Attendance records
+    // Document ID is strictly deterministic: {memberId}_{YYYY-MM-DD}
+    match /attendance/{recordId} {
+      allow read: if isAuthenticated();
+      // Only admin can mark attendance, and only 1 record per member per date can exist
+      allow create: if isAdmin() && 
+                    request.resource.data.memberId != null &&
+                    request.resource.data.date != null &&
+                    recordId == request.resource.data.memberId + '_' + request.resource.data.date;
+      allow update, delete: if isAdmin();
+    }
+
+    // Club / App Settings
+    match /settings/{settingId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}
